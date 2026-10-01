@@ -8,7 +8,7 @@
 # result, kubectl cp it back, check its sha256, clean up the pod.
 #
 # Usage:
-#   ./export.sh [options] [output.db]      (default output: crowdsieve-YYYYMMDD.db)
+#   ./export.sh [options] [output.db]      (default output: crowdsieve.db)
 #   ./export.sh --inspect                  (show what would be excluded, write nothing)
 #
 # Options:
@@ -53,7 +53,7 @@ while [ $# -gt 0 ]; do
     esac
 done
 
-OUTPUT=${OUTPUT:-crowdsieve-$(date +%Y%m%d).db}
+OUTPUT=${OUTPUT:-crowdsieve.db}
 if [ "$INSPECT" = 0 ] && [ -e "$OUTPUT" ] && [ "$FORCE" = 0 ]; then
     echo "$OUTPUT already exists (use --force to overwrite)" >&2
     exit 1

@@ -22,12 +22,13 @@ This repository provides a local CrowdSieve instance with real data to work on.
 
 ## Files
 
-| File                 | Purpose                                      |
-| -------------------- | -------------------------------------------- |
-| `docker-compose.yml` | Runs CrowdSieve on the given SQLite database |
-| `crowdsieve.yaml`    | CrowdSieve settings for a frozen dataset     |
-| `build-geoip.sh`     | Downloads the GeoIP database into `./geoip/` |
-| `.env.example`       | Template for the docker compose variables    |
+| File                    | Purpose                                             |
+| ----------------------- | --------------------------------------------------- |
+| `docker-compose.yml`    | Runs CrowdSieve on the given SQLite database        |
+| `crowdsieve.yaml`       | CrowdSieve settings for a frozen dataset            |
+| `build-geoip.sh`        | Downloads the GeoIP database into `./geoip/`        |
+| `.env.example`          | Template for the docker compose variables           |
+| `examples/qwen-chat.ts` | Minimal TypeScript example talking to a Qwen3 model |
 
 ## Requirements
 
@@ -117,6 +118,26 @@ curl -X POST http://localhost:8080/v2/signals \
 The alert then appears in the dashboard, located in Mountain View (US).
 Restarting the container (`docker compose restart`) removes the alerts sent
 this way, since the working copy is recreated from the original file.
+
+## Talking to the AI model
+
+[`examples/qwen-chat.ts`](examples/qwen-chat.ts) is a minimal TypeScript
+example (Node >= 18, no dependency) that sends a conversation to a Qwen3 model
+through an OpenAI-compatible API (`POST /chat/completions`), as exposed by
+Ollama, vLLM, llama.cpp or LiteLLM. It shows a free-text answer and a
+structured one (JSON following a schema), the latter being the way to turn
+the model's opinion into a decision.
+
+```bash
+export AI_API_URL=http://localhost:11434/v1 # e.g. a local Ollama
+export AI_MODEL=qwen3:8b
+export AI_API_KEY=...                       # if the server requires one
+npx tsx examples/qwen-chat.ts
+```
+
+Qwen3 reasons before answering: OpenAI-compatible servers usually return this
+reasoning separately (`reasoning_content`), the answer itself being in
+`content`.
 
 ## Understanding the data
 
