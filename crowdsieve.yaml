@@ -1,4 +1,4 @@
-# CrowdSieve configuration for the frozen students dataset
+# CrowdSieve configuration for a frozen dataset
 proxy:
   forward_enabled: false
 
