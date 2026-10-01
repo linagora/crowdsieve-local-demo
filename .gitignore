@@ -9,3 +9,7 @@
 
 # Local settings
 .env
+
+# GeoIP database (build-geoip.sh)
+geoip/
+*.mmdb

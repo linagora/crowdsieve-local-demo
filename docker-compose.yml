@@ -1,5 +1,6 @@
 # CrowdSieve running on a local SQLite database.
 #
+#   ./build-geoip.sh        # once a month: GeoIP database in ./geoip
 #   CROWDSIEVE_DB=./crowdsieve.db docker compose up -d
 #   -> dashboard: http://localhost:3000   API: http://localhost:8080
 #
@@ -8,8 +9,12 @@
 # original data. The file must be readable by the container user (uid 1001),
 # e.g. `chmod 644 crowdsieve.db`.
 #
+# The GeoIP database built by build-geoip.sh is required: the container
+# refuses to start without it.
+#
 # Variables (shell or .env file, see .env.example):
 #   CROWDSIEVE_DB        SQLite file to serve (required)
+#   GEOIP_DIR            directory holding geoip-city.mmdb (default: ./geoip)
 #   CROWDSIEVE_VERSION   image tag (default: 0.6.6)
 #   BIND_ADDRESS         address the ports are published on (default: 127.0.0.1)
 #   DASHBOARD_PORT       dashboard port (default: 3000)
@@ -29,6 +34,10 @@ services:
           echo "Cannot read $$CROWDSIEVE_DB_NAME (mounted on /seed/crowdsieve.db): check that the file exists and is readable (chmod 644)" >&2
           exit 1
         fi
+        if [ ! -s /geoip/geoip-city.mmdb ] || [ ! -r /geoip/geoip-city.mmdb ]; then
+          echo "GeoIP database not found: run ./build-geoip.sh first" >&2
+          exit 1
+        fi
         rm -f /app/data/crowdsieve.db /app/data/crowdsieve.db-wal /app/data/crowdsieve.db-shm
         cp /seed/crowdsieve.db /app/data/crowdsieve.db
         exec ./start.sh
@@ -38,12 +47,14 @@ services:
     volumes:
       - "${CROWDSIEVE_DB:?Set CROWDSIEVE_DB to the SQLite file to serve}:/seed/crowdsieve.db:ro"
       - ./crowdsieve.yaml:/app/config/crowdsieve.yaml:ro
+      - ${GEOIP_DIR:-./geoip}:/geoip:ro
       - data:/app/data
     environment:
       CROWDSIEVE_DB_NAME: ${CROWDSIEVE_DB}
       CONFIG_PATH: /app/config/crowdsieve.yaml
       FILTERS_DIR: /app/config/none
       DATABASE_PATH: /app/data/crowdsieve.db
+      GEOIP_DB_PATH: /geoip/geoip-city.mmdb
       STORAGE_TYPE: sqlite
       # Frozen dataset: never purge old rows, never forward anything to CAPI
       RETENTION_DAYS: "36500"
