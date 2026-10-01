@@ -1,0 +1,11 @@
+# Exported data (never commit)
+*.db
+*.db-*
+*.db.*
+*.gz
+*.part
+*.sqlite
+*.sqlite3
+
+# Local settings
+.env

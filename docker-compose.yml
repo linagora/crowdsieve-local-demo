@@ -1,0 +1,65 @@
+# CrowdSieve running on a local SQLite database (e.g. produced by export.sh).
+#
+#   CROWDSIEVE_DB=./etudiants.db docker compose up -d
+#   -> dashboard: http://localhost:3000   API: http://localhost:8080
+#
+# The given file is mounted read-only and copied into a working volume at each
+# start: the original is never modified, and a restart gives back the
+# original data. The file must be readable by the container user (uid 1001),
+# e.g. `chmod 644 etudiants.db`.
+#
+# Variables (shell or .env file, see .env.example):
+#   CROWDSIEVE_DB        SQLite file to serve (required)
+#   CROWDSIEVE_VERSION   image tag (default: 0.6.6)
+#   BIND_ADDRESS         address the ports are published on (default: 127.0.0.1)
+#   DASHBOARD_PORT       dashboard port (default: 3000)
+#   PROXY_PORT           API port (default: 8080)
+#   DASHBOARD_API_KEY    API key shared by the dashboard and the API
+
+services:
+  crowdsieve:
+    image: yadd/crowdsieve:${CROWDSIEVE_VERSION:-0.6.6}
+    restart: unless-stopped
+    command:
+      - /bin/sh
+      - -c
+      - |
+        set -e
+        if [ ! -r /seed/crowdsieve.db ]; then
+          echo "Cannot read $$CROWDSIEVE_DB_NAME (mounted on /seed/crowdsieve.db): check that the file exists and is readable (chmod 644)" >&2
+          exit 1
+        fi
+        rm -f /app/data/crowdsieve.db /app/data/crowdsieve.db-wal /app/data/crowdsieve.db-shm
+        cp /seed/crowdsieve.db /app/data/crowdsieve.db
+        exec ./start.sh
+    ports:
+      - "${BIND_ADDRESS:-127.0.0.1}:${DASHBOARD_PORT:-3000}:3000"
+      - "${BIND_ADDRESS:-127.0.0.1}:${PROXY_PORT:-8080}:8080"
+    volumes:
+      - "${CROWDSIEVE_DB:?Set CROWDSIEVE_DB to the SQLite file to serve}:/seed/crowdsieve.db:ro"
+      - ./crowdsieve.yaml:/app/config/crowdsieve.yaml:ro
+      - data:/app/data
+    environment:
+      CROWDSIEVE_DB_NAME: ${CROWDSIEVE_DB}
+      CONFIG_PATH: /app/config/crowdsieve.yaml
+      FILTERS_DIR: /app/config/none
+      DATABASE_PATH: /app/data/crowdsieve.db
+      STORAGE_TYPE: sqlite
+      # Frozen dataset: never purge old rows, never forward anything to CAPI
+      RETENTION_DAYS: "36500"
+      FORWARD_ENABLED: "false"
+      # The proxy and the dashboard are two processes: the key must be shared
+      DASHBOARD_API_KEY: ${DASHBOARD_API_KEY:-crowdsieve-students}
+      API_URL: http://localhost:8080
+      AUTH_MODE: none
+      LOG_LEVEL: ${LOG_LEVEL:-info}
+      LOG_FORMAT: json
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+
+volumes:
+  data:

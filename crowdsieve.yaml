@@ -1,0 +1,22 @@
+# CrowdSieve configuration for the frozen students dataset
+proxy:
+  forward_enabled: false
+
+storage:
+  type: sqlite
+  path: /app/data/crowdsieve.db
+  # Never purge: the dataset is historical
+  retention_days: 36500
+
+bouncer_metrics:
+  retention_days: 36500
+
+# No LAPI server: bans/unbans from the dashboard are not possible
+lapi_servers: []
+
+filters:
+  mode: block
+  rules: []
+
+analyzers:
+  enabled: false
