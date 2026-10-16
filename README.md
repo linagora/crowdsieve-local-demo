@@ -143,12 +143,12 @@ reasoning separately (`reasoning_content`), the answer itself being in
 
 Each alert has a `scenario` whose prefix tells where it comes from:
 
-| Prefix            | Origin                                                                                                             |
-| ----------------- | ------------------------------------------------------------------------------------------------------------------ |
-| `crowdsecurity/*` | CrowdSec security engines: parsers and scenarios from the CrowdSec Hub, applied to server logs (SSH, web servers…) |
-| `llng/*`          | LemonLDAP::NG portal: its CrowdSec agent pushes alerts directly, without log parsing                               |
-| `crowdsieve/*`    | Manual bans and their audit trail, recorded by CrowdSieve itself                                                   |
-| other `author/*`  | Community scenarios from the CrowdSec Hub                                                                          |
+|Prefix                                                                                    |Origin                                                                                                            |
+|------------------------------------------------------------------------------------------|------------------------------------------------------------------------------------------------------------------|
+|[crowdsecurity/*](https://app.crowdsec.net/hub/collections?filters=author%3Dcrowdsecurity)|CrowdSec security engines: parsers and scenarios from the CrowdSec Hub, applied to server logs (SSH, web servers…)|
+|[llng/*](https://github.com/linagora/lemonldap-ng-plugins/tree/main/crowdsec-filters)     |LemonLDAP::NG portal: its CrowdSec agent pushes alerts directly, without log parsing                              |
+|[crowdsieve/*](https://github.com/linagora/crowdsieve/tree/master/config/filters.d)       |Manual bans and their audit trail, recorded by CrowdSieve itself                                                  |
+|[other author/*](https://app.crowdsec.net/hub/scenarios)                                  |Community scenarios from the CrowdSec Hub                                                                         |
 
 The database schema is described in CrowdSieve's
 [`src/db/schema.ts`](https://github.com/linagora/crowdsieve/blob/master/src/db/schema.ts).
